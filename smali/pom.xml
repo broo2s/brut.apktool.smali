@@ -2,11 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.jf</groupId>
+    <groupId>brut.apktool.smali</groupId>
     <artifactId>smali</artifactId>
     <version>${aversion}</version>
     <parent>
-        <groupId>org.jf</groupId>
+        <groupId>brut.apktool.smali</groupId>
         <artifactId>smali-pom</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -130,12 +130,12 @@
             <version>3.2</version>
         </dependency>
         <dependency>
-            <groupId>org.jf</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dexlib</artifactId>
             <version>${version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jf</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>util</artifactId>
             <version>${version}</version>
         </dependency>

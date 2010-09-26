@@ -2,11 +2,11 @@
 <project>
     <parent>
         <artifactId>smali-pom</artifactId>
-        <groupId>org.jf</groupId>
+        <groupId>brut.apktool.smali</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.jf</groupId>
+    <groupId>brut.apktool.smali</groupId>
     <artifactId>maven-smali-plugin</artifactId>
     <version>${aversion}</version>
     <packaging>maven-plugin</packaging>
@@ -24,7 +24,7 @@
             <version>2.0.8</version>
         </dependency>
         <dependency>
-            <groupId>org.jf</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>smali</artifactId>
             <version>${version}</version>
         </dependency>

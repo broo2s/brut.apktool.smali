@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.jf</groupId>
+    <groupId>brut.apktool.smali</groupId>
     <artifactId>smali-pom</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
-        <aversion>1.2.4</aversion>
+        <aversion>1.2.4-brut1-SNAPSHOT</aversion>
     </properties>
     <build>
         <plugins>
@@ -20,6 +20,14 @@
                 </configuration>
             </plugin>
         </plugins>
+
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-webdav</artifactId>
+                <version>1.0-beta-2</version>
+            </extension>
+        </extensions>
     </build>
     <modules>
         <module>dexlib</module>
@@ -28,4 +36,15 @@
 	<module>util</module>
         <module>maven-smali-plugin</module>
     </modules>
+
+    <distributionManagement>
+        <repository>
+            <id>android-apktool.googlecode.com</id>
+            <url>dav:https://android-apktool.googlecode.com/svn/m2-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>android-apktool.googlecode.com</id>
+            <url>dav:https://android-apktool.googlecode.com/svn/m2-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
