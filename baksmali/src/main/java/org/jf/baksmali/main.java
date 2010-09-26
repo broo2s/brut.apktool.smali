@@ -56,6 +56,8 @@ public class main {
     public static final int MERGE = 32;
     public static final int FULLMERGE = 64;
 
+    public static final int DIFFPRE = 128;
+
     static {
         options = new Options();
         basicOptions = new Options();
