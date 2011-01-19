@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>brut.apktool.smali</groupId>
     <artifactId>smali-pom</artifactId>
-    <version>1.2.4-brut3</version>
+    <version>1.2.4-brut4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
-        <aversion>1.2.4-brut3</aversion>
+        <aversion>1.2.4-brut4-SNAPSHOT</aversion>
     </properties>
     <build>
         <plugins>
