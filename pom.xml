@@ -7,7 +7,7 @@
     <version>1.0-brut1</version>
     <packaging>pom</packaging>
     <properties>
-        <aversion>1.2.6-brut5</aversion>
+        <aversion>1.2.6-brut6-SNAPSHOT</aversion>
     </properties>
     <build>
         <plugins>
