@@ -148,7 +148,7 @@ import org.jf.dexlib.Code.Format.*;
 		if (verboseErrors) {
 			List stack = getRuleInvocationStack(e, this.getClass().getName());
 			String msg = null;
-			
+
 			if (e instanceof NoViableAltException) {
 				NoViableAltException nvae = (NoViableAltException)e;
 				msg = " no viable alt; token="+getTokenErrorDisplay(e.token)+
@@ -158,8 +158,8 @@ import org.jf.dexlib.Code.Format.*;
 			} else {
 				msg = super.getErrorMessage(e, tokenNames);
 			}
-			
-			return stack + " " + msg;			
+
+			return stack + " " + msg;
 		} else {
 			return super.getErrorMessage(e, tokenNames);
 		}
@@ -280,12 +280,12 @@ import org.jf.dexlib.Code.Format.*;
 		}
 		return root;
 	}
-	
+
 	private void throwOdexedInstructionException(IntStream input, String odexedInstruction)
 			throws OdexedInstructionException {
 		/*this has to be done in a separate method, otherwise java will complain about the
 		auto-generated code in the rule after the throw not being reachable*/
-		throw new OdexedInstructionException(input, odexedInstruction);		
+		throw new OdexedInstructionException(input, odexedInstruction);
 	}
 }
 
@@ -421,6 +421,7 @@ simple_name
 	|	ACCESS_SPEC -> SIMPLE_NAME[$ACCESS_SPEC]
 	|	POSITIVE_INTEGER_LITERAL -> SIMPLE_NAME[$POSITIVE_INTEGER_LITERAL]
 	|	NEGATIVE_INTEGER_LITERAL -> SIMPLE_NAME[$NEGATIVE_INTEGER_LITERAL]
+	|	INTEGER_LITERAL -> SIMPLE_NAME[$INTEGER_LITERAL]
 	|	FLOAT_LITERAL_OR_ID -> SIMPLE_NAME[$FLOAT_LITERAL_OR_ID]
 	|	DOUBLE_LITERAL_OR_ID -> SIMPLE_NAME[$DOUBLE_LITERAL_OR_ID]
 	|	BOOL_LITERAL -> SIMPLE_NAME[$BOOL_LITERAL]
@@ -435,10 +436,12 @@ simple_name
 	|	INSTRUCTION_FORMAT11x -> SIMPLE_NAME[$INSTRUCTION_FORMAT11x]
 	|	INSTRUCTION_FORMAT12x_OR_ID -> SIMPLE_NAME[$INSTRUCTION_FORMAT12x_OR_ID]
 	|	INSTRUCTION_FORMAT21c_FIELD -> SIMPLE_NAME[$INSTRUCTION_FORMAT21c_FIELD]
+	|	INSTRUCTION_FORMAT21c_FIELD_ODEX -> SIMPLE_NAME[$INSTRUCTION_FORMAT21c_FIELD_ODEX]
 	|	INSTRUCTION_FORMAT21c_STRING -> SIMPLE_NAME[$INSTRUCTION_FORMAT21c_STRING]
 	|	INSTRUCTION_FORMAT21c_TYPE -> SIMPLE_NAME[$INSTRUCTION_FORMAT21c_TYPE]
 	|	INSTRUCTION_FORMAT21t -> SIMPLE_NAME[$INSTRUCTION_FORMAT21t]
 	|	INSTRUCTION_FORMAT22c_FIELD -> SIMPLE_NAME[$INSTRUCTION_FORMAT22c_FIELD]
+	|	INSTRUCTION_FORMAT22c_FIELD_ODEX -> SIMPLE_NAME[$INSTRUCTION_FORMAT22c_FIELD_ODEX]
 	|	INSTRUCTION_FORMAT22c_TYPE -> SIMPLE_NAME[$INSTRUCTION_FORMAT22c_TYPE]
 	|	INSTRUCTION_FORMAT22cs_FIELD -> SIMPLE_NAME[$INSTRUCTION_FORMAT22cs_FIELD]
 	|	INSTRUCTION_FORMAT22s_OR_ID -> SIMPLE_NAME[$INSTRUCTION_FORMAT22s_OR_ID]
@@ -558,7 +561,7 @@ enum_literal
 
 type_field_method_literal
 	:	reference_type_descriptor
-		(	ARROW 
+		(	ARROW
 			(	simple_name COLON nonvoid_type_descriptor -> ^(I_ENCODED_FIELD reference_type_descriptor simple_name nonvoid_type_descriptor)
 			|	method_name method_prototype -> ^(I_ENCODED_METHOD reference_type_descriptor method_name method_prototype)
 			)
@@ -684,9 +687,14 @@ instruction returns [int size]
 	|	//e.g. goto/16 endloop:
 		INSTRUCTION_FORMAT20t label_ref_or_offset {$size = Format.Format20t.size;}
 		-> ^(I_STATEMENT_FORMAT20t[$start, "I_STATEMENT_FORMAT20t"] INSTRUCTION_FORMAT20t label_ref_or_offset)
-	|	//e.g. sget_object v0 java/lang/System/out LJava/io/PrintStream;
+	|	//e.g. sget-object v0 java/lang/System/out LJava/io/PrintStream;
 		INSTRUCTION_FORMAT21c_FIELD REGISTER COMMA fully_qualified_field {$size = Format.Format21c.size;}
 		-> ^(I_STATEMENT_FORMAT21c_FIELD[$start, "I_STATEMENT_FORMAT21c_FIELD"] INSTRUCTION_FORMAT21c_FIELD REGISTER fully_qualified_field)
+	|	//e.g. sget-object-volatile v0 java/lang/System/out LJava/io/PrintStream;
+		INSTRUCTION_FORMAT21c_FIELD_ODEX REGISTER COMMA fully_qualified_field
+		{
+			throwOdexedInstructionException(input, $INSTRUCTION_FORMAT21c_FIELD_ODEX.text);
+		}
 	|	//e.g. const-string v1 "Hello World!"
 		INSTRUCTION_FORMAT21c_STRING REGISTER COMMA STRING_LITERAL {$size = Format.Format21c.size;}
 		-> ^(I_STATEMENT_FORMAT21c_STRING[$start, "I_STATEMENT_FORMAT21c_STRING"] INSTRUCTION_FORMAT21c_STRING REGISTER STRING_LITERAL)
@@ -708,6 +716,11 @@ instruction returns [int size]
 	|	//e.g. iput-object v1, v0 org/jf/HelloWorld2/HelloWorld2.helloWorld Ljava/lang/String;
 		INSTRUCTION_FORMAT22c_FIELD REGISTER COMMA REGISTER COMMA fully_qualified_field {$size = Format.Format22c.size;}
 		-> ^(I_STATEMENT_FORMAT22c_FIELD[$start, "I_STATEMENT_FORMAT22c_FIELD"] INSTRUCTION_FORMAT22c_FIELD REGISTER REGISTER fully_qualified_field)
+	|	//e.g. iput-object-volatile v1, v0 org/jf/HelloWorld2/HelloWorld2.helloWorld Ljava/lang/String;
+		INSTRUCTION_FORMAT22c_FIELD_ODEX REGISTER COMMA REGISTER COMMA fully_qualified_field
+		{
+			throwOdexedInstructionException(input, $INSTRUCTION_FORMAT22c_FIELD_ODEX.text);
+		}
 	|	//e.g. instance-of v0, v1, Ljava/lang/String;
 		INSTRUCTION_FORMAT22c_TYPE REGISTER COMMA REGISTER COMMA nonvoid_type_descriptor {$size = Format.Format22c.size;}
 		-> ^(I_STATEMENT_FORMAT22c_TYPE[$start, "I_STATEMENT_FORMAT22c_TYPE"] INSTRUCTION_FORMAT22c_TYPE REGISTER REGISTER nonvoid_type_descriptor)

@@ -32,6 +32,8 @@ import org.jf.baksmali.Adaptors.ClassDefinition;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.Code.Analysis.ClassPath;
 import org.jf.dexlib.DexFile;
+import org.jf.util.ClassFileNameHandler;
+import org.jf.util.IndentingWriter;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -129,7 +131,7 @@ public class baksmali {
             }
         });
 
-        fileNameHandler fileNameHandler = new fileNameHandler(outputDirectoryFile);
+        ClassFileNameHandler fileNameHandler = new ClassFileNameHandler(outputDirectoryFile, ".smali");
 
         for (ClassDefItem classDefItem: classDefItems) {
             /**

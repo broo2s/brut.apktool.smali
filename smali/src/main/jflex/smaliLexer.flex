@@ -202,7 +202,13 @@ Float3 = -? {HexPrefix} {HexDigit}+ "." {HexDigit}* {BinaryExponent}
 Float4 = -? {HexPrefix} "." {HexDigit}+ {BinaryExponent}
 Float =  {Float1} | {Float2} | {Float3} | {Float4}
 
-SimpleName = [A-Za-z0-9$\-_\u00a1-\u1fff\u2010-\u2027\u2030-\ud7ff\ue000-\uffef]+
+HighSurrogate = [\ud800-\udbff]
+
+LowSurrogate = [\udc00-\udfff]
+
+SimpleNameCharacter = ({HighSurrogate} {LowSurrogate}) | [A-Za-z0-9$\-_\u00a1-\u1fff\u2010-\u2027\u2030-\ud7ff\ue000-\uffef]
+
+SimpleName = {SimpleNameCharacter}+
 
 PrimitiveType = [ZBSCIJFD]
 
@@ -410,6 +416,11 @@ Type = {PrimitiveType} | {ClassDescriptor} | {ArrayDescriptor}
         return newToken(INSTRUCTION_FORMAT21c_FIELD);
     }
 
+    "sget-volatile" | "sget-wide-volatile" | "sget-object-volatile" | "sput-volatile" | "sput-wide-volatile" |
+    "sput-object-volatile" {
+        return newToken(INSTRUCTION_FORMAT21c_FIELD_ODEX);
+    }
+
     "const-string" {
         return newToken(INSTRUCTION_FORMAT21c_STRING);
     }
@@ -438,6 +449,11 @@ Type = {PrimitiveType} | {ClassDescriptor} | {ArrayDescriptor}
     "iget" | "iget-wide" | "iget-object" | "iget-boolean" | "iget-byte" | "iget-char" | "iget-short" | "iput" |
     "iput-wide" | "iput-object" | "iput-boolean" | "iput-byte" | "iput-char" | "iput-short" {
         return newToken(INSTRUCTION_FORMAT22c_FIELD);
+    }
+
+    "iget-volatile" | "iget-wide-volatile" | "iget-object-volatile" | "iput-volatile" | "iput-wide-volatile" |
+    "iput-object-volatile" {
+        return newToken(INSTRUCTION_FORMAT22c_FIELD_ODEX);
     }
 
     "instance-of" | "new-array" {

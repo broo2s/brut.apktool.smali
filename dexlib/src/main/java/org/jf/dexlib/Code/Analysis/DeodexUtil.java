@@ -39,43 +39,7 @@ public class DeodexUtil {
     public static final int Direct = 1;
     public static final int Static = 2;
 
-    private final InlineMethod[] inlineMethods;
-
-    private final InlineMethod[] inlineMethods_35 = new InlineMethod[] {
-            new InlineMethod(Static, "Lorg/apache/harmony/dalvik/NativeTestTarget;", "emptyInlineMethod", "", "V"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "charAt", "I", "C"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "compareTo", "Ljava/lang/String;", "I"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "equals", "Ljava/lang/Object;", "Z"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "length", "", "I"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "abs", "I", "I"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "abs", "J", "J"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "abs", "F", "F"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "abs", "D", "D"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "min", "II", "I"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "max", "II", "I"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "sqrt", "D", "D"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "cos", "D", "D"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "sin", "D", "D")
-    };
-
-    private final InlineMethod[] inlineMethods_36 = new InlineMethod[] {
-            new InlineMethod(Static, "Lorg/apache/harmony/dalvik/NativeTestTarget;", "emptyInlineMethod", "", "V"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "charAt", "I", "C"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "compareTo", "Ljava/lang/String;", "I"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "equals", "Ljava/lang/Object;", "Z"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "indexOf", "I", "I"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "indexOf", "II", "I"),
-            new InlineMethod(Virtual, "Ljava/lang/String;", "length", "", "I"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "abs", "I", "I"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "abs", "J", "J"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "abs", "F", "F"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "abs", "D", "D"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "min", "II", "I"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "max", "II", "I"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "sqrt", "D", "D"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "cos", "D", "D"),
-            new InlineMethod(Static, "Ljava/lang/Math;", "sin", "D", "D")
-    };
+    private final InlineMethodResolver inlineMethodResolver;
 
     public final DexFile dexFile;
 
@@ -86,21 +50,12 @@ public class DeodexUtil {
             //if there isn't an odex header, why are we creating an DeodexUtil object?
             assert false;
             throw new RuntimeException("Cannot create a DeodexUtil object for a dex file without an odex header");
-        } else if (odexHeader.version == 35) {
-            inlineMethods = inlineMethods_35;
-        } else if (odexHeader.version == 36) {
-            inlineMethods = inlineMethods_36;
-        } else {
-            assert false;
-            throw new RuntimeException(String.format("odex version %d isn't supported yet", odexHeader.version));
         }
+        inlineMethodResolver = InlineMethodResolver.createInlineMethodResolver(this, odexHeader.version);
     }
 
-    public InlineMethod lookupInlineMethod(int inlineMethodIndex) {
-        if (inlineMethodIndex >= inlineMethods.length) {
-            throw new RuntimeException("Invalid inline method index " + inlineMethodIndex + ".");
-        }
-        return inlineMethods[inlineMethodIndex];
+    public InlineMethod lookupInlineMethod(AnalyzedInstruction instruction) {
+        return inlineMethodResolver.resolveExecuteInline(instruction);
     }
 
     public FieldIdItem lookupField(ClassPath.ClassDef classDef, int fieldOffset) {
@@ -288,49 +243,6 @@ public class DeodexUtil {
         return null;
     }
 
-    /**
-     * Compare the inline methods that we have against the given set of inline methods from deodexerant.
-     * We want to make sure that each inline method in inlineMethods matches the method we have at the same
-     * index. We may have more inline methods than we are given in inlineMethods - this shouldn't be a problem.
-     * Newer versions of dalvik add additional inline methods, but (so far) have changed any existing ones.
-     *
-     * If anything doesn't look right, we just throw an exception
-     * @param inlineMethods the inline methods from deodexerant
-     */
-    protected void checkInlineMethods(String[] inlineMethods) {
-        if (inlineMethods.length > this.inlineMethods.length) {
-            throw new ValidationException("Inline method count mismatch");
-        }
-
-        for (int i=0; i<inlineMethods.length; i++) {
-            String inlineMethod = inlineMethods[i];
-            int methodType;
-
-            if (inlineMethod.startsWith("static")) {
-                methodType = Static;
-                inlineMethod = inlineMethod.substring(7);
-            } else if (inlineMethod.startsWith("direct")) {
-                methodType = Direct;
-                inlineMethod = inlineMethod.substring(7);
-            } else if (inlineMethod.startsWith("virtual")) {
-                methodType = Virtual;
-                inlineMethod = inlineMethod.substring(8);
-            } else {
-                throw new ValidationException("Could not parse inline method");
-            }
-
-            if (!inlineMethod.equals(this.inlineMethods[i].getMethodString())) {
-                throw new ValidationException(String.format("Inline method mismatch. %s vs. %s", inlineMethod,
-                        this.inlineMethods[i].getMethodString()));
-            }
-
-            if (methodType != this.inlineMethods[i].methodType) {
-                throw new ValidationException(String.format("Inline method type mismatch. %d vs. %d", methodType,
-                        this.inlineMethods[i].methodType));
-            }
-        }
-    }
-
     public class InlineMethod {
         public final int methodType;
         public final String classType;
@@ -340,7 +252,7 @@ public class DeodexUtil {
 
         private MethodIdItem methodIdItem = null;
 
-        protected InlineMethod(int methodType, String classType, String methodName, String parameters,
+        InlineMethod(int methodType, String classType, String methodName, String parameters,
                                String returnType) {
             this.methodType = methodType;
             this.classType = classType;
